@@ -16,18 +16,25 @@
       .drag-root {
         width: 100%;
         height: 100%;
-        -webkit-app-region: drag;
         display: grid;
         place-items: center;
+        cursor: move;
       }
 
       .camera-shell {
         width: 280px;
         height: 280px;
+        border-radius: 50%;
+        box-shadow: 0 14px 20px rgba(0, 0, 0, 0.45);
+        cursor: move;
+      }
+
+      .camera-clip {
+        width: 100%;
+        height: 100%;
         overflow: hidden;
         border: 2px solid #fff;
         border-radius: 50%;
-        box-shadow: 0 14px 20px rgba(0, 0, 0, 0.45);
         background: #111;
       }
 
@@ -36,6 +43,7 @@
         height: 100%;
         object-fit: cover;
         transform: scaleX(-1);
+        pointer-events: none;
       }
 
       .mask {
@@ -63,10 +71,12 @@
     </style>
   </head>
   <body>
-    <div class="drag-root">
-      <div id="cameraShell" class="camera-shell">
-        <video id="preview" autoplay muted playsinline></video>
-        <div id="fallback" class="fallback">摄像头未开启</div>
+    <div class="drag-root" data-tauri-drag-region>
+      <div id="cameraShell" class="camera-shell" data-tauri-drag-region>
+        <div id="cameraClip" class="camera-clip" data-tauri-drag-region>
+          <video id="preview" autoplay muted playsinline></video>
+          <div id="fallback" class="fallback">摄像头未开启</div>
+        </div>
       </div>
     </div>
 
