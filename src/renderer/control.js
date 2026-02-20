@@ -6,34 +6,19 @@ const tauriInvoke = window.__TAURI__?.core?.invoke;
 
 const api = {
   getOverlayDefaults: () => {
-    if (typeof tauriInvoke === 'function') {
-      return tauriInvoke('get_overlay_defaults');
-    }
-    return window.camshadow.getOverlayDefaults();
+    return tauriInvoke('get_overlay_defaults');
   },
   updateOverlayStyle: (style) => {
-    if (typeof tauriInvoke === 'function') {
-      return tauriInvoke('update_overlay_style', { style });
-    }
-    return window.camshadow.updateOverlayStyle(style);
+    return tauriInvoke('update_overlay_style', { style });
   },
   toggleOverlayVisible: (visible) => {
-    if (typeof tauriInvoke === 'function') {
-      return tauriInvoke('toggle_overlay_visible', { visible });
-    }
-    return window.camshadow.toggleOverlayVisible(visible);
+    return tauriInvoke('toggle_overlay_visible', { visible });
   },
   getOverlayPosition: () => {
-    if (typeof tauriInvoke === 'function') {
-      return tauriInvoke('get_overlay_position');
-    }
-    return null;
+    return tauriInvoke('get_overlay_position');
   },
   setOverlayPosition: (position) => {
-    if (typeof tauriInvoke === 'function') {
-      return tauriInvoke('set_overlay_position', { position });
-    }
-    return null;
+    return tauriInvoke('set_overlay_position', { position });
   }
 };
 

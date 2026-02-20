@@ -113,10 +113,6 @@ if (typeof tauriListen === 'function') {
   tauriListen('overlay:apply-style', (event) => {
     applyStyle(event.payload || {});
   });
-} else if (window.camshadow?.onOverlayStyle) {
-  window.camshadow.onOverlayStyle((style) => {
-    applyStyle(style);
-  });
 }
 
 startCameraPreview();

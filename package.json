@@ -2,16 +2,12 @@
   "name": "camshadow-mvp",
   "version": "0.1.0",
   "description": "CamShadow camera-only floating overlay",
-  "main": "src/main.js",
   "scripts": {
     "start": "tauri dev",
-    "build": "tauri build",
-    "start:electron": "electron ."
+    "build": "tauri build"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.0.0",
-    "electron": "^37.2.0",
-    "electron-builder": "^24.13.3"
+    "@tauri-apps/cli": "^2.0.0"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0"

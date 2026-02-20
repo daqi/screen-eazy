@@ -1,6 +1,6 @@
 # CamShadow MVP
 
-基于 Electron 的 ScreenSaga 风格 MVP，目标是提供高美感摄像头悬浮体验（纯摄像头模式）。
+基于 Tauri 的 ScreenSaga 风格 MVP，目标是提供高美感摄像头悬浮体验（纯摄像头模式）。
 
 ## 功能
 
@@ -15,11 +15,6 @@
 npm install
 npm start
 ```
-
-## 已知说明（MVP）
-
-- macOS 上系统音频抓取依赖系统权限与底层能力，若不可用会退化为仅麦克风。
-- 录制底层使用 WebM，并在停止后自动本地转码为 MP4（H.264/AAC），转码时间取决于机器性能。
 
 ## 打包后权限（macOS）
 
