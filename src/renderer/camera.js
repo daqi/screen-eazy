@@ -42,22 +42,26 @@ async function startCameraPreview(deviceLabel) {
       cameraStream = null;
     }
 
+    // Always enumerate to get a concrete deviceId
     let resolvedDeviceId = null;
+    try {
+      // Request permission first so labels are populated
+      const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      tmp.getTracks().forEach(t => t.stop());
+    } catch (_) {}
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cameras = devices.filter(d => d.kind === 'videoinput');
     if (deviceLabel) {
-      try {
-        // Ensure permissions first so labels are available
-        const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        tmp.getTracks().forEach(t => t.stop());
-      } catch (_) {}
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const match = devices.find(d => d.kind === 'videoinput' && d.label === deviceLabel);
-      resolvedDeviceId = match?.deviceId || null;
+      const match = cameras.find(d => d.label === deviceLabel);
+      resolvedDeviceId = match?.deviceId || cameras[0]?.deviceId || null;
+    } else {
+      resolvedDeviceId = cameras[0]?.deviceId || null;
     }
 
     const constraints = {
       video: resolvedDeviceId
         ? { deviceId: { exact: resolvedDeviceId } }
-        : { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
+        : true,
       audio: false
     };
 
