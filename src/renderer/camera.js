@@ -35,17 +35,33 @@ function rgba(hex, alpha) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-async function startCameraPreview() {
+async function startCameraPreview(deviceLabel) {
   try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        frameRate: { ideal: 30 }
-      },
-      audio: false
-    });
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(t => t.stop());
+      cameraStream = null;
+    }
 
+    let resolvedDeviceId = null;
+    if (deviceLabel) {
+      try {
+        // Ensure permissions first so labels are available
+        const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        tmp.getTracks().forEach(t => t.stop());
+      } catch (_) {}
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const match = devices.find(d => d.kind === 'videoinput' && d.label === deviceLabel);
+      resolvedDeviceId = match?.deviceId || null;
+    }
+
+    const constraints = {
+      video: resolvedDeviceId
+        ? { deviceId: { exact: resolvedDeviceId } }
+        : { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
+      audio: false
+    };
+
+    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
     preview.srcObject = cameraStream;
     fallback.classList.remove('show');
   } catch (error) {
@@ -112,6 +128,13 @@ function bindDragging() {
 if (typeof tauriListen === 'function') {
   tauriListen('overlay:apply-style', (event) => {
     applyStyle(event.payload || {});
+  });
+
+  tauriListen('camera:select-device', (event) => {
+    const label = event.payload;
+    if (label) {
+      startCameraPreview(label);
+    }
   });
 }
 

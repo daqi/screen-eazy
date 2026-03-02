@@ -1,6 +1,12 @@
 const statusEl = document.getElementById('status');
 const toggleOverlayBtn = document.getElementById('toggleOverlayBtn');
-const SETTINGS_STORAGE_KEY = 'camshadow.overlay.settings.v1';
+const toggleFrameBtn = document.getElementById('toggleFrameBtn');
+const applyFrameSizeBtn = document.getElementById('applyFrameSizeBtn');
+const toggleFrameClickThroughBtn = document.getElementById('toggleFrameClickThroughBtn');
+const cameraSelectEl = document.getElementById('cameraSelect');
+const frameWidthEl = document.getElementById('frameWidth');
+const frameHeightEl = document.getElementById('frameHeight');
+const SETTINGS_STORAGE_KEY = 'camshadow.overlay.settings.v2';
 
 const tauriInvoke = window.__TAURI__?.core?.invoke;
 
@@ -19,7 +25,11 @@ const api = {
   },
   setOverlayPosition: (position) => {
     return tauriInvoke('set_overlay_position', { position });
-  }
+  },
+  toggleFrameVisible: (visible) => tauriInvoke('toggle_frame_visible', { visible }),
+  setFrameSize: (width, height) => tauriInvoke('set_frame_size', { width, height }),
+  setFrameClickThrough: (enable) => tauriInvoke('set_frame_click_through', { enable }),
+  setCameraDevice: (deviceId) => tauriInvoke('set_camera_device', { deviceId }),
 };
 
 const styleControls = {
@@ -33,6 +43,8 @@ const styleControls = {
 };
 
 let overlayVisible = true;
+let frameVisible = false;
+let frameClickThrough = false;
 let lastOverlayPosition = null;
 
 function saveSettings() {
@@ -40,6 +52,7 @@ function saveSettings() {
     const payload = {
       style: currentStylePayload(),
       overlayVisible,
+      frameVisible,
       overlayPosition: lastOverlayPosition
     };
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(payload));
@@ -175,6 +188,80 @@ toggleOverlayBtn.addEventListener('click', async () => {
   saveSettings();
 });
 
+function updateFrameUI() {
+  if (toggleFrameBtn) {
+    toggleFrameBtn.textContent = frameVisible ? '隐藏录制框' : '显示录制框';
+  }
+}
+
+function updateFrameClickThroughUI() {
+  if (toggleFrameClickThroughBtn) {
+    toggleFrameClickThroughBtn.textContent = frameClickThrough ? '关闭穿透' : '开启穿透';
+  }
+}
+
+if (toggleFrameBtn) {
+  toggleFrameBtn.addEventListener('click', async () => {
+    frameVisible = !frameVisible;
+    await api.toggleFrameVisible(frameVisible);
+    updateFrameUI();
+    saveSettings();
+  });
+}
+
+if (applyFrameSizeBtn) {
+  applyFrameSizeBtn.addEventListener('click', async () => {
+    const w = parseInt(frameWidthEl?.value || '540', 10);
+    const h = parseInt(frameHeightEl?.value || '960', 10);
+    if (w > 0 && h > 0) {
+      await api.setFrameSize(w, h);
+    }
+  });
+}
+
+if (toggleFrameClickThroughBtn) {
+  toggleFrameClickThroughBtn.addEventListener('click', async () => {
+    frameClickThrough = !frameClickThrough;
+    await api.setFrameClickThrough(frameClickThrough);
+    updateFrameClickThroughUI();
+  });
+}
+
+async function enumerateCameras() {
+  if (!cameraSelectEl) return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    stream.getTracks().forEach(t => t.stop());
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cameras = devices.filter(d => d.kind === 'videoinput');
+    cameraSelectEl.innerHTML = '';
+    cameras.forEach((cam, i) => {
+      const opt = document.createElement('option');
+      const label = cam.label || `摄像头 ${i + 1}`;
+      opt.value = label;
+      opt.textContent = label;
+      cameraSelectEl.appendChild(opt);
+    });
+    if (cameras.length === 0) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = '无可用摄像头';
+      cameraSelectEl.appendChild(opt);
+    }
+  } catch (e) {
+    console.warn('枚举摄像头失败:', e);
+  }
+}
+
+if (cameraSelectEl) {
+  cameraSelectEl.addEventListener('change', async () => {
+    const label = cameraSelectEl.value;
+    if (label) {
+      await api.setCameraDevice(label);
+    }
+  });
+}
+
 (async function bootstrap() {
   const defaults = await api.getOverlayDefaults();
   styleControls.cameraSize.value = String(defaults.cameraSize);
@@ -191,6 +278,9 @@ toggleOverlayBtn.addEventListener('click', async () => {
   if (typeof saved?.overlayVisible === 'boolean') {
     overlayVisible = saved.overlayVisible;
   }
+  if (typeof saved?.frameVisible === 'boolean') {
+    frameVisible = saved.frameVisible;
+  }
   if (saved?.overlayPosition && Number.isInteger(saved.overlayPosition.x) && Number.isInteger(saved.overlayPosition.y)) {
     lastOverlayPosition = saved.overlayPosition;
   }
@@ -205,6 +295,12 @@ toggleOverlayBtn.addEventListener('click', async () => {
   }
   await api.toggleOverlayVisible(overlayVisible);
   updateOverlayVisibilityUI();
+
+  await api.toggleFrameVisible(frameVisible);
+  updateFrameUI();
+  updateFrameClickThroughUI();
+
+  await enumerateCameras();
 
   setInterval(() => {
     snapshotOverlayPosition();

@@ -198,6 +198,39 @@ fn toggle_overlay_visible(app: tauri::AppHandle, visible: bool) -> Result<(), St
 }
 
 #[tauri::command]
+fn toggle_frame_visible(app: tauri::AppHandle, visible: bool) -> Result<(), String> {
+  let Some(frame) = app.get_webview_window("frame") else { return Ok(()); };
+  if visible {
+    frame.show().map_err(|e| e.to_string())?;
+    frame.set_focus().map_err(|e| e.to_string())?;
+  } else {
+    frame.hide().map_err(|e| e.to_string())?;
+  }
+  Ok(())
+}
+
+#[tauri::command]
+fn set_frame_size(app: tauri::AppHandle, width: u32, height: u32) -> Result<(), String> {
+  let Some(frame) = app.get_webview_window("frame") else { return Ok(()); };
+  frame.set_size(Size::Logical(LogicalSize::new(width as f64, height as f64)))
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn set_frame_click_through(app: tauri::AppHandle, enable: bool) -> Result<(), String> {
+  let Some(frame) = app.get_webview_window("frame") else { return Ok(()); };
+  frame.set_ignore_cursor_events(enable).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn set_camera_device(app: tauri::AppHandle, device_id: String) -> Result<(), String> {
+  if let Some(camera) = app.get_webview_window("camera") {
+    camera.emit("camera:select-device", &device_id).map_err(|e| e.to_string())?;
+  }
+  Ok(())
+}
+
+#[tauri::command]
 fn control_hide(app: tauri::AppHandle) -> Result<(), String> {
   if let Some(control) = app.get_webview_window("control") {
     control.hide().map_err(|error| error.to_string())?;
@@ -225,6 +258,18 @@ fn setup_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
             if let Some(control) = app.get_webview_window("control") {
               let _ = control.show();
               let _ = control.set_focus();
+            } else {
+              let _ = tauri::WebviewWindowBuilder::new(
+                &app,
+                "control",
+                tauri::WebviewUrl::App("control.html".into()),
+              )
+              .title("CamShadow 控制中心")
+              .inner_size(860.0, 640.0)
+              .min_inner_size(820.0, 620.0)
+              .resizable(true)
+              .center()
+              .build();
             }
           }
         }
@@ -247,6 +292,10 @@ fn main() {
       get_overlay_position,
       set_overlay_position,
       toggle_overlay_visible,
+      toggle_frame_visible,
+      set_frame_size,
+      set_frame_click_through,
+      set_camera_device,
       control_hide,
       control_show
     ])

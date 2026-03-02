@@ -36,6 +36,22 @@
         "resizable": false,
         "skipTaskbar": true,
         "visible": true
+      },
+      {
+        "label": "frame",
+        "title": "录制框",
+        "url": "frame.html",
+        "width": 540,
+        "height": 960,
+        "x": 200,
+        "y": 60,
+        "transparent": true,
+        "decorations": false,
+        "shadow": false,
+        "alwaysOnTop": true,
+        "resizable": false,
+        "skipTaskbar": true,
+        "visible": false
       }
     ],
     "security": {

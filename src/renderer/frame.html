@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>录制框</title>
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        background: transparent;
+        overflow: hidden;
+        user-select: none;
+      }
+
+      .drag-root {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        cursor: move;
+        /* 透明窗口全透明区域不接收鼠标事件，需足够不透明才能命中检测 */
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .frame-border {
+        position: absolute;
+        inset: 6px;
+        border: 3px solid rgba(255, 210, 0, 0.92);
+        border-radius: 6px;
+        box-shadow:
+          0 0 0 1px rgba(0,0,0,0.35),
+          inset 0 0 0 1px rgba(0,0,0,0.2);
+        pointer-events: none;
+      }
+
+      .corner {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-color: #ffd200;
+        border-style: solid;
+        border-radius: 2px;
+        pointer-events: none;
+      }
+      .corner-tl { top: 6px;    left: 6px;   border-width: 3px 0 0 3px; }
+      .corner-tr { top: 6px;    right: 6px;  border-width: 3px 3px 0 0; }
+      .corner-bl { bottom: 6px; left: 6px;   border-width: 0 0 3px 3px; }
+      .corner-br { bottom: 6px; right: 6px;  border-width: 0 3px 3px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="drag-root" data-tauri-drag-region>
+      <div class="frame-border"></div>
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+    </div>
+    <script src="./frame.js"></script>
+  </body>
+</html>
